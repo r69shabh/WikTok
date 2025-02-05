@@ -65,8 +65,11 @@ const Profile = () => {
               {/* Theme Toggle */}
               <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex items-center gap-2">
-                  {theme === 'dark' ? <Moon size={20} className="text-white" /> : <Sun size={20} className="text-black" />}
-                  <span className="text-black dark:text-white">Dark Mode</span>
+                  {theme === 'dark' ? 
+                    <Moon size={20} className="text-gray-800 dark:text-white" /> : 
+                    <Sun size={20} className="text-gray-800 dark:text-white" />
+                  }
+                  <span className="text-gray-800 dark:text-white">Dark Mode</span>
                 </div>
                 <button
                   onClick={toggleTheme}
@@ -83,8 +86,8 @@ const Profile = () => {
               {/* Language Selector */}
               <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex items-center gap-2">
-                  <Globe2 size={20} className="text-black dark:text-white" />
-                  <span className="text-black dark:text-white">Language</span>
+                  <Globe2 size={20} className="text-gray-800 dark:text-white" />
+                  <span className="text-gray-800 dark:text-white">Language</span>
                 </div>
                 <select
                   value={language}
