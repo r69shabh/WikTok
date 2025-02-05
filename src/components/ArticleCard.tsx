@@ -115,7 +115,36 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
               </div>
               <span className="text-sm mt-1 text-white">Save</span>
             </button>
-            <button className="flex flex-col items-center">
+            <button 
+              className="flex flex-col items-center"
+              onClick={async () => {
+                const shareData = {
+                  title: title,
+                  text: extract,
+                  url: `https://en.wikipedia.org/?curid=${pageId}`
+                };
+                try {
+                  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
+                  } else {
+                    // Fallback for browsers that don't support Web Share API
+                    await navigator.clipboard.writeText(shareData.url);
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full text-sm z-50';
+                    notification.textContent = 'Link copied to clipboard!';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                  }
+                } catch (error) {
+                  console.error('Share failed:', error);
+                  const notification = document.createElement('div');
+                  notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full text-sm z-50';
+                  notification.textContent = 'Unable to share article';
+                  document.body.appendChild(notification);
+                  setTimeout(() => notification.remove(), 2000);
+                }
+              }}
+            >
               <div className="w-12 h-12 flex items-center justify-center">
                 <Share2 size={24} className="fill-white text-white" />
               </div>
