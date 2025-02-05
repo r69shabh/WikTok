@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Discover from './pages/Discover';
 import Profile from './pages/Profile';
+import AuthCallback from './pages/AuthCallback';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -20,6 +21,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/discover" element={<Discover />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
                 </Routes>
               </div>
               <Navbar />
