@@ -81,7 +81,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
               onClick={async () => {
                 const shareData = {
                   title: title,
-                  text: `${title}\n\n${extract}`,
+                  text: title,
                   url: `https://en.wikipedia.org/?curid=${pageId}`
                 };
 
@@ -89,7 +89,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
                   if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                   } else {
-                    await navigator.clipboard.writeText(`${title}\n\n${extract}\n\nRead more: https://en.wikipedia.org/?curid=${pageId}`);
+                    await navigator.clipboard.writeText(`${title}\nRead more: https://en.wikipedia.org/?curid=${pageId}`);
                     const notification = document.createElement('div');
                     notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm z-50';
                     notification.textContent = 'Article link copied to clipboard!';
@@ -99,7 +99,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
                 } catch (error) {
                   console.error('Share failed:', error);
                   try {
-                    await navigator.clipboard.writeText(`${title}\n\n${extract}\n\nRead more: https://en.wikipedia.org/?curid=${pageId}`);
+                    await navigator.clipboard.writeText(`${title}\nRead more: https://en.wikipedia.org/?curid=${pageId}`);
                     const notification = document.createElement('div');
                     notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm z-50';
                     notification.textContent = 'Article link copied to clipboard!';
