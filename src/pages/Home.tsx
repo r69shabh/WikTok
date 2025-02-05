@@ -3,6 +3,7 @@ import ArticleCard from '../components/ArticleCard';
 import { useInView } from 'react-intersection-observer';
 import { ArrowDown } from 'lucide-react';
 import { Comment } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface WikipediaResponse {
   query: {
@@ -40,6 +41,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { ref, inView } = useInView();
   const startY = useRef(0);
+  const { language } = useLanguage();
 
   const fetchRandomArticles = async () => {
     if (isLoading) return;
@@ -47,14 +49,14 @@ const Home = () => {
     try {
       // Fetch random article titles
       const randomResponse = await fetch(
-        'https://en.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=5&format=json&origin=*'
+        `https://${language}.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=5&format=json&origin=*`
       );
       const randomData: WikipediaResponse = await randomResponse.json();
 
       // Fetch content for each article
       const articlePromises = randomData.query.random.map(async (article) => {
         const contentResponse = await fetch(
-          `https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=800&pageids=${article.id}&format=json&origin=*`
+          `https://${language}.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=800&pageids=${article.id}&format=json&origin=*`
         );
         const contentData: WikipediaContent = await contentResponse.json();
         const page = contentData.query.pages[article.id];
@@ -100,7 +102,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchRandomArticles();
-  }, []);
+  }, [language]); // Refetch when language changes
 
   useEffect(() => {
     if (inView) {

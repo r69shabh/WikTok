@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, TrendingUp, X } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface TrendingArticle {
   title: string;
@@ -24,12 +25,13 @@ const Discover = () => {
   const [trendingArticles, setTrendingArticles] = useState<TrendingArticle[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout>();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const fetchTrendingArticles = async () => {
       try {
         const response = await fetch(
-          'https://en.wikipedia.org/w/api.php?action=query&list=mostviewed&pvlimit=10&format=json&origin=*'
+          `https://${language}.wikipedia.org/w/api.php?action=query&list=mostviewed&pvlimit=10&format=json&origin=*`
         );
         const data = await response.json();
         const articles = data.query.mostviewed.map((article: any) => ({
@@ -41,7 +43,7 @@ const Discover = () => {
         const articlesWithExtracts = await Promise.all(
           articles.map(async (article: TrendingArticle) => {
             const extractResponse = await fetch(
-              `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(
+              `https://${language}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(
                 article.title
               )}&format=json&origin=*`
             );
@@ -59,7 +61,7 @@ const Discover = () => {
     };
 
     fetchTrendingArticles();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     if (searchTimeout.current) {
@@ -70,7 +72,7 @@ const Discover = () => {
       searchTimeout.current = setTimeout(async () => {
         try {
           const response = await fetch(
-            `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(
+            `https://${language}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(
               searchTerm
             )}&limit=5&format=json&origin=*`
           );
@@ -86,16 +88,15 @@ const Discover = () => {
       setShowSuggestions(false);
       setIsSearching(false);
     }
-  }, [searchTerm]);
+  }, [searchTerm, language]);
 
   const handleSearch = async (searchQuery: string) => {
     setIsSearching(true);
     setShowSuggestions(false);
-    setSuggestions([]); // Add this line to clear suggestions
+    setSuggestions([]);
     try {
-      // Search for exact matches first
       const response = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=10&prop=extracts|pageimages&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=400&gsrsearch=${encodeURIComponent(
+        `https://${language}.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=10&prop=extracts|pageimages&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=400&gsrsearch=${encodeURIComponent(
           searchQuery
         )}&format=json&origin=*`
       );
