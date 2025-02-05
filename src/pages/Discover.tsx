@@ -116,33 +116,27 @@ const Discover = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setSearchTerm(suggestion);
-    handleSearch(suggestion);
+  const handleClearSearch = () => {
+    setSearchTerm('');
   };
 
   return (
-    <div className="min-h-screen bg-black p-4">
+    <div className="min-h-screen bg-white dark:bg-black light:bg-white p-4">
       <form onSubmit={handleSubmit} className="relative mb-6">
-        <div className="flex items-center bg-gray-900 rounded-full px-4 py-2">
+        <div className="flex items-center bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-full px-4 py-2">
           <Search size={20} className="text-gray-400" />
           <input
             type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search Wikipedia"
-            className="bg-transparent border-none focus:outline-none text-white ml-2 w-full"
+            className="bg-transparent border-none focus:outline-none dark:text-white light:text-black ml-2 w-full"
           />
           {searchTerm && (
             <button
               type="button"
-              onClick={() => {
-                setSearchTerm('');
-                setSuggestions([]);
-                setShowSuggestions(false);
-                setIsSearching(false);
-              }}
-              className="text-gray-400 hover:text-white"
+              onClick={handleClearSearch}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-white light:hover:text-black"
             >
               <X size={20} />
             </button>
@@ -150,11 +144,11 @@ const Discover = () => {
         </div>
 
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute left-0 right-0 mt-2 bg-gray-900 rounded-lg overflow-hidden z-50">
+          <div className="absolute left-0 right-0 mt-2 bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-lg overflow-hidden z-50">
             {suggestions.map((suggestion, index) => (
               <button
                 key={index}
-                className="w-full px-4 py-3 text-left hover:bg-gray-800 text-white"
+                className="w-full px-4 py-3 text-left hover:bg-gray-200 dark:hover:bg-gray-800 light:hover:bg-gray-200 dark:text-white light:text-black"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
@@ -169,7 +163,7 @@ const Discover = () => {
           {searchResults.map((result) => (
             <div
               key={result.pageid}
-              className="bg-gray-900 rounded-lg overflow-hidden"
+              className="bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-lg overflow-hidden"
             >
               {result.thumbnail && (
                 <img
@@ -179,13 +173,13 @@ const Discover = () => {
                 />
               )}
               <div className="p-4">
-                <h3 className="font-bold text-lg mb-2">{result.title}</h3>
-                <p className="text-sm text-gray-400 line-clamp-3">{result.extract}</p>
+                <h3 className="font-bold text-lg mb-2 dark:text-white light:text-black">{result.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 light:text-gray-600 line-clamp-3">{result.extract}</p>
                 <a
                   href={`https://en.wikipedia.org/?curid=${result.pageid}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 mt-2 inline-block text-sm"
+                  className="text-blue-500 hover:text-blue-400 mt-2 inline-block text-sm"
                 >
                   Read more
                 </a>
@@ -193,7 +187,7 @@ const Discover = () => {
             </div>
           ))}
           {searchResults.length === 0 && (
-            <div className="text-center text-gray-400 py-8">
+            <div className="text-center text-gray-500 dark:text-gray-400 light:text-gray-500 py-8">
               No results found for "{searchTerm}"
             </div>
           )}
@@ -201,22 +195,22 @@ const Discover = () => {
       ) : (
         <div className="mb-6">
           <div className="flex items-center mb-4">
-            <TrendingUp size={20} className="mr-2" />
-            <h2 className="text-lg font-bold">Trending on Wikipedia</h2>
+            <TrendingUp size={20} className="mr-2 dark:text-white light:text-black" />
+            <h2 className="text-lg font-bold dark:text-white light:text-black">Trending on Wikipedia</h2>
           </div>
           <div className="space-y-4">
             {trendingArticles.map((article, index) => (
               <div
                 key={index}
-                className="bg-gray-900 rounded-lg p-4"
+                className="bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-lg p-4"
                 onClick={() => handleSearch(article.title)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-1">{article.title}</h3>
-                    <p className="text-sm text-gray-400 line-clamp-2">{article.extract}</p>
+                    <h3 className="font-bold text-lg mb-1 dark:text-white light:text-black">{article.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 light:text-gray-600 line-clamp-2">{article.extract}</p>
                   </div>
-                  <span className="text-sm text-gray-400 ml-4">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 light:text-gray-500 ml-4">
                     {new Intl.NumberFormat().format(article.views)} views
                   </span>
                 </div>

@@ -25,15 +25,15 @@ const CommentComponent: React.FC<{
   const [showReplies, setShowReplies] = useState(false);
 
   return (
-    <div className={`mb-4 ${depth > 0 ? 'ml-8 border-l-2 border-gray-800 pl-4' : ''}`}>
+    <div className={`mb-4 ${depth > 0 ? 'ml-8 border-l-2 border-gray-800 dark:border-gray-800 light:border-gray-200 pl-4' : ''}`}>
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-gray-800 flex-shrink-0" />
+        <div className="w-8 h-8 rounded-full bg-gray-800 dark:bg-gray-800 light:bg-gray-200 flex-shrink-0" />
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-semibold">{comment.author}</span>
+            <span className="font-semibold dark:text-white light:text-black">{comment.author}</span>
             <span className="text-xs text-gray-400">{comment.timestamp}</span>
           </div>
-          <p className="mt-1 text-gray-200">{comment.content}</p>
+          <p className="mt-1 dark:text-gray-200 light:text-gray-800">{comment.content}</p>
           <div className="flex items-center gap-4 mt-2">
             <button 
               className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-300"
@@ -57,7 +57,7 @@ const CommentComponent: React.FC<{
                   } else {
                     await navigator.clipboard.writeText(`${comment.author}: ${comment.content}\n${window.location.href}`);
                     const notification = document.createElement('div');
-                    notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm z-50';
+                    notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 dark:bg-gray-800 light:bg-gray-200 dark:text-white light:text-black px-4 py-2 rounded-full text-sm z-50';
                     notification.textContent = 'Comment copied to clipboard!';
                     document.body.appendChild(notification);
                     setTimeout(() => notification.remove(), 2000);
@@ -67,7 +67,7 @@ const CommentComponent: React.FC<{
                   try {
                     await navigator.clipboard.writeText(`${comment.author}: ${comment.content}\n${window.location.href}`);
                     const notification = document.createElement('div');
-                    notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm z-50';
+                    notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 dark:bg-gray-800 light:bg-gray-200 dark:text-white light:text-black px-4 py-2 rounded-full text-sm z-50';
                     notification.textContent = 'Comment copied to clipboard!';
                     document.body.appendChild(notification);
                     setTimeout(() => notification.remove(), 2000);
@@ -170,7 +170,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ comments, articleId }) 
       timeout={300}
       classNames="comment-section"
     >
-      <div className="h-full flex flex-col bg-black">
+      <div className="h-full flex flex-col dark:bg-black light:bg-white">
         <div className="flex-1 overflow-y-auto p-4 hide-scrollbar">
           {allComments.map((comment) => (
             <CommentComponent
@@ -183,7 +183,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ comments, articleId }) 
             />
           ))}
         </div>
-        <div className="sticky bottom-0 border-t border-gray-800 bg-black p-4">
+        <div className="sticky bottom-0 border-t dark:border-gray-800 light:border-gray-200 dark:bg-black light:bg-white p-4">
           {replyingTo && (
             <div className="flex items-center justify-between mb-2 px-2">
               <span className="text-sm text-gray-400">
@@ -201,13 +201,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ comments, articleId }) 
             </div>
           )}
           <form onSubmit={handleSubmit} className="flex gap-3 items-center">
-            <div className="w-8 h-8 rounded-full bg-gray-800 flex-shrink-0" />
+            <div className="w-8 h-8 rounded-full bg-gray-800 dark:bg-gray-800 light:bg-gray-200 flex-shrink-0" />
             <input
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={replyingTo ? `Reply to @${replyingToAuthor}...` : "Add a comment..."}
-              className="flex-1 bg-gray-900 rounded-full px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 dark:bg-gray-900 light:bg-gray-100 rounded-full px-4 py-2 dark:text-white light:text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"
