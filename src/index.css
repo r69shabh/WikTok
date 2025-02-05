@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide scrollbar but maintain scroll functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Comment section slide animation */
+.comment-section-enter {
+  transform: translateY(100%);
+}
+
+.comment-section-enter-active {
+  transform: translateY(0);
+  transition: transform 300ms ease-in-out;
+}
+
+.comment-section-exit {
+  transform: translateY(0);
+}
+
+.comment-section-exit-active {
+  transform: translateY(100%);
+  transition: transform 300ms ease-in-out;
+}
+
+/* Snap scrolling container */
+.snap-scroll-container {
+  scroll-snap-type: y mandatory;
+  height: calc(100vh - 4rem);
+  overflow-y: scroll;
+}
+
+/* Snap scroll items */
+.snap-scroll-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: calc(100vh - 4rem);
+}
