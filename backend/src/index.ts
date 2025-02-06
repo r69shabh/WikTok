@@ -1,50 +1,115 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth';
+import { supabase } from './lib/supabase';
 import { PrismaClient } from '@prisma/client';
-import fetch from 'node-fetch';
-import jwt from 'jsonwebtoken';
+const token = require('jsonwebtoken').sign(
 
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const port = process.env.PORT || 3000;
+const prisma = new PrismaClient();
 
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
 app.use(express.json());
 
-// OAuth callback endpoint
-app.get('/auth/callback', async (req, res) => {
-  const { code, state } = req.query;
-  const clientId = process.env.WIKI_CLIENT_ID;
-  const clientSecret = process.env.WIKI_CLIENT_SECRET;
-  const redirectUri = `${process.env.FRONTEND_URL}/auth/callback`;
+// Routes
+app.use('/auth', authRoutes);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// Like an article
+app.post('/api/articles/:id/like', async (req, res) => {
+  const { id } = req.params;
+  const { user_id } = req.body;
 
   try {
-    // Exchange code for access token
-    const tokenResponse = await fetch('https://meta.wikimedia.org/w/rest.php/oauth2/access_token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
-      },
-      body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}`
-    });
+    const { data, error } = await supabase
+      .from('likes')
+      .insert({
+        article_id: parseInt(id),
+        user_id
+      });
 
-    const tokenData = await tokenResponse.json();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to like article' });
+  }
+});
 
-    // Get user info
-    const userResponse = await fetch('https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile', {
-      headers: {
-        'Authorization': `Bearer ${tokenData.access_token}`
-      }
-    });
+// Unlike an article
+app.delete('/api/articles/:id/like', async (req, res) => {
+  const { id } = req.params;
+  const { user_id } = req.body;
 
-    const userData = await userResponse.json();
+  try {
+    const { error } = await supabase
+      .from('likes')
+      .delete()
+      .match({ article_id: parseInt(id), user_id });
 
-    // Create or update user in database
-    const user = await prisma.user.upsert({
+    if (error) throw error;
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to unlike article' });
+  }
+});
+
+// Add a comment
+app.post('/api/articles/:id/comments', async (req, res) => {
+  const { id } = req.params;
+  const { user_id, content, parent_id } = req.body;
+
+  try {
+    const { data, error } = await supabase
+      .from('comments')
+      .insert({
+        content,
+        article_id: parseInt(id),
+        user_id,
+        parent_id
+      })
+      .select('*, user:users(*)');
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to add comment' });
+  }
+});
+
+// Get article interactions
+app.get('/api/articles/:id/interactions', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [{ count: likes }, { data: comments }] = await Promise.all([
+      supabase
+        .from('likes')
+        .select('*', { count: 'exact' })
+        .eq('article_id', parseInt(id)),
+      supabase
+        .from('comments')
+        .select('*, user:users(*), replies:comments(*)')
+        .eq('article_id', parseInt(id))
+        .is('parent_id', null)
+    ]);
+
+    res.json({ likes, comments });
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to get article interactions' });
+  }
+});
       where: { username: userData.username },
       update: { token: tokenData.access_token },
       create: {
@@ -74,13 +139,15 @@ app.post('/api/articles/:id/like', async (req, res) => {
   const { userId } = req.body;
 
   try {
-    const like = await prisma.like.create({
-      data: {
-        userId,
-        articleId: parseInt(id)
-      }
-    });
-    res.json(like);
+    const { data, error } = await supabase
+      .from('likes')
+      .insert({
+        user_id: userId,
+        article_id: parseInt(id)
+      });
+
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     res.status(400).json({ error: 'Failed to like article' });
   }
@@ -92,14 +159,15 @@ app.delete('/api/articles/:id/like', async (req, res) => {
   const { userId } = req.body;
 
   try {
-    await prisma.like.delete({
-      where: {
-        userId_articleId: {
-          userId,
-          articleId: parseInt(id)
-        }
-      }
-    });
+    const { error } = await supabase
+      .from('likes')
+      .delete()
+      .match({ 
+        user_id: userId,
+        article_id: parseInt(id)
+      });
+
+    if (error) throw error;
     res.status(204).send();
   } catch (error) {
     res.status(400).json({ error: 'Failed to unlike article' });

@@ -36,12 +36,22 @@ interface Article {
   comments: Comment[];
 }
 
-const Home = () => {
-  const [articles, setArticles] = useState<Article[]>([]);
+const HomeContent = () => {
+  const [articles, setArticles] = useState<Article[]>(() => {
+    // Initialize articles from sessionStorage if available
+    const savedArticles = sessionStorage.getItem('homeArticles');
+    return savedArticles ? JSON.parse(savedArticles) : [];
+  });
+  
   const [isLoading, setIsLoading] = useState(false);
   const { ref, inView } = useInView();
   const startY = useRef(0);
   const { language } = useLanguage();
+
+  // Save articles to sessionStorage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem('homeArticles', JSON.stringify(articles));
+  }, [articles]);
 
   const fetchRandomArticles = async () => {
     if (isLoading) return;
@@ -100,19 +110,33 @@ const Home = () => {
     }
   };
 
+  // Add effect for initial fetch
   useEffect(() => {
-    fetchRandomArticles();
-  }, [language]); // Refetch when language changes
+    if (articles.length === 0) {
+      fetchRandomArticles();
+    }
+  }, []);
 
+  // Add effect for infinite scroll
   useEffect(() => {
     if (inView) {
       fetchRandomArticles();
     }
   }, [inView]);
 
+  const handleTouchEnd = () => {
+    if (isPulling && pullProgress >= 1) {
+      // Clear both articles and storage on manual refresh
+      setArticles([]);
+      sessionStorage.removeItem('homeArticles');
+      fetchRandomArticles();
+    }
+    setIsPulling(false);
+    setPullProgress(0);
+  };
+
   const [isPulling, setIsPulling] = useState(false);
   const [pullProgress, setPullProgress] = useState(0);
-  // Removing duplicate startY declaration since it's already declared above
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startY.current = e.touches[0].clientY;
@@ -125,15 +149,6 @@ const Home = () => {
       setIsPulling(true);
       setPullProgress(Math.min(diff / 100, 1));
     }
-  };
-
-  const handleTouchEnd = () => {
-    if (isPulling && pullProgress >= 1) {
-      setArticles([]);
-      fetchRandomArticles();
-    }
-    setIsPulling(false);
-    setPullProgress(0);
   };
 
   return (
@@ -182,4 +197,20 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default function Home() {
+  const scrollPositionRef = useRef(0);
+
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('homeScrollPosition');
+    if (savedPosition) {
+      window.scrollTo(0, parseInt(savedPosition));
+    }
+
+    return () => {
+      scrollPositionRef.current = window.scrollY;
+      sessionStorage.setItem('homeScrollPosition', scrollPositionRef.current.toString());
+    };
+  }, []);
+
+  return <HomeContent />;
+}
