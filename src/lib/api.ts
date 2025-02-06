@@ -1,13 +1,25 @@
 import { supabase } from './supabase';
 
+export const handleApiError = (error: any) => {
+  if (error.response) {
+    throw new Error(error.response.data.message || 'Server error');
+  }
+  throw new Error('Network error');
+};
+
 export const articleAPI = {
   async getLikes(articleId: number) {
-    const { count } = await supabase
-      .from('likes')
-      .select('*', { count: 'exact' })
-      .eq('article_id', articleId);
-    return count || 0;
+    try {
+      const { count } = await supabase
+        .from('likes')
+        .select('*', { count: 'exact' })
+        .eq('article_id', articleId);
+      return count || 0;
+    } catch (error) {
+      handleApiError(error);
+    }
   },
+};
 
   async toggleLike(articleId: number, userId: string) {
     const { data: existingLike } = await supabase

@@ -57,7 +57,12 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
           <img
             src={imageUrl}
             alt={title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = '/fallback-image.png';
+            }}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black dark:from-gray-900 dark:to-black light:from-gray-100 light:to-white" />

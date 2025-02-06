@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import logo from './logo.png';
@@ -22,7 +22,6 @@ function AppContent() {
 
   const handleLogoClick = () => {
     if (location.pathname === '/') {
-      // Clear both scroll position and articles
       sessionStorage.removeItem('homeScrollPosition');
       sessionStorage.removeItem('homeArticles');
       window.location.reload();
@@ -40,32 +39,42 @@ function AppContent() {
         />
       )}
       <div className="max-w-md mx-auto pb-16">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/notifications" element={<Notifications />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/discover" element={<Discover />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/notifications" element={<Notifications />} />
+          </Routes>
+        </Suspense>
       </div>
       <Navbar />
     </div>
   );
 }
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <LanguageProvider>
-          <NotificationProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </NotificationProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <NotificationProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </NotificationProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

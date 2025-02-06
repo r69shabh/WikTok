@@ -38,7 +38,9 @@ app.post('/api/articles/:id/like', async (req, res) => {
       .insert({
         article_id: parseInt(id),
         user_id
-      });
+      })
+      .select()
+      .single();
 
     if (error) throw error;
     res.json(data);

@@ -4,6 +4,7 @@ import { articleAPI } from '../lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, Trash2, Edit2, Save, X } from 'lucide-react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { VirtualScroll } from 'virtual-scroll-component';
 
 interface Comment {
   id: string;
@@ -27,89 +28,20 @@ interface CommentsProps {
   error: string | null;
 }
 
-export const Comments: React.FC<CommentsProps> = ({ 
-  articleId, 
-  comments, 
-  onNewComment, 
-  isLoading,
-  error 
-}) => {
-  const { user } = useAuth();
-  const [content, setContent] = useState('');
-  const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState('');
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+export const Comments: React.FC<CommentsProps> = ({ comments, ...props }) => {
+  return (
+    <VirtualScroll
+      data={comments}
+      itemHeight={100}
+      windowHeight={500}
+      renderItem={(comment) => (
+        <CommentItem key={comment.id} comment={comment} />
+      )}
+    />
+  );
+};
 
-  const handleSubmit = async (e: React.FormEvent, parentId?: string) => {
-    e.preventDefault();
-    if (!user || !content.trim()) return;
-
-    try {
-      const { data, error } = await articleAPI.addComment(
-        articleId,
-        user.id,
-        content,
-        parentId
-      );
-
-      if (error) throw error;
-      if (data) {
-        onNewComment(data);
-        setContent('');
-        setReplyTo(null);
-      }
-    } catch (error) {
-      console.error('Failed to add comment:', error);
-    }
-  };
-
-  const handleDelete = async (commentId: string) => {
-    try {
-      await articleAPI.deleteComment(commentId);
-      // Update comments list locally
-      onNewComment(comments.filter(c => c.id !== commentId));
-    } catch (error) {
-      console.error('Failed to delete comment:', error);
-    }
-  };
-
-  const handleEdit = async (commentId: string) => {
-    try {
-      const { data, error } = await articleAPI.updateComment(commentId, editContent);
-      if (error) throw error;
-      if (data) {
-        onNewComment(comments.map(c => c.id === commentId ? { ...c, content: editContent } : c));
-        setEditingId(null);
-        setEditContent('');
-      }
-    } catch (error) {
-      console.error('Failed to edit comment:', error);
-    }
-  };
-
-  const loadMore = async () => {
-    if (isLoadingMore) return;
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const moreComments = await articleAPI.getComments(articleId, nextPage);
-      if (moreComments.length === 0) {
-        setHasMore(false);
-      } else {
-        onNewComment([...comments, ...moreComments]);
-        setPage(nextPage);
-      }
-    } catch (error) {
-      console.error('Failed to load more comments:', error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
-
-  const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
+const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
     <div className={`${isReply ? 'ml-8' : 'border-b border-gray-200 dark:border-gray-800'} py-3`}>
       <div className="flex items-start gap-2">
         <div className="flex-1">

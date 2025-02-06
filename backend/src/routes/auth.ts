@@ -1,15 +1,27 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
 import fetch from 'node-fetch';
 import { supabase } from '../lib/supabase';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
-// OAuth callback endpoint
+const clientId = process.env.WIKIPEDIA_CLIENT_ID;
+const clientSecret = process.env.WIKIPEDIA_CLIENT_SECRET;
+const redirectUri = process.env.REDIRECT_URI;
+
+if (!clientId || !clientSecret || !redirectUri) {
+  throw new Error('Missing required environment variables');
+}
+
 router.get('/callback', async (req, res) => {
   const { code, state } = req.query;
   
+  if (!code) {
+    return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
+  }
+
   try {
     // Exchange code for access token
     const tokenResponse = await fetch('https://meta.wikimedia.org/w/rest.php/oauth2/access_token', {
@@ -82,7 +94,7 @@ router.get('/callback', async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}?session=${session.access_token}`);
   } catch (error) {
     console.error('Auth error:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/auth/error`);
+    res.redirect(`${process.env.FRONTEND_URL}?error=${encodeURIComponent(error instanceof Error ? error.message : 'Unknown error')}`);
   }
 });
 

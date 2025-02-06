@@ -3,8 +3,28 @@ import { ArticleInteractions } from './ArticleInteractions';
 import { Comments } from './Comments';
 import { articleAPI } from '../lib/api';
 
+interface ArticleProps {
+  id: number;
+  title: string;
+  content: string;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  user: { username: string };
+  replies?: Comment[];
+  reactions: {
+    likes: number;
+    dislikes: number;
+    userReaction?: 'like' | 'dislike';
+  };
+}
+
 export const Article: React.FC<ArticleProps> = ({ id, title, content }) => {
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
