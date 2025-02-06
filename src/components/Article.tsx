@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArticleInteractions } from './ArticleInteractions';
 import { Comments } from './Comments';
+import Reader from './Reader';
 import { articleAPI } from '../lib/api';
 
 interface ArticleProps {
@@ -24,48 +25,55 @@ interface Comment {
 }
 
 export const Article: React.FC<ArticleProps> = ({ id, title, content }) => {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [showReader, setShowReader] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fullContent, setFullContent] = useState('');
 
-  useEffect(() => {
-    loadComments();
-  }, [id]);
-
-  const loadComments = async () => {
+  const handleTitleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      setError(null);
-      const data = await articleAPI.getComments(id);
-      setComments(data);
-    } catch (err) {
-      setError('Failed to load comments');
-      console.error(err);
+      const response = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(title)}`
+      );
+      const articleContent = await response.text();
+      setFullContent(articleContent);
+      setShowReader(true);
+    } catch (error) {
+      console.error('Failed to fetch article:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleNewComment = (commentData: any) => {
-    if (Array.isArray(commentData)) {
-      setComments(commentData);
-    } else {
-      setComments((prev) => [commentData, ...prev]);
-    }
-  };
-
   return (
-    <div className="border-b border-gray-200 dark:border-gray-800 p-4">
-      <h2 className="text-xl font-bold mb-2">{title}</h2>
-      <div className="mb-4">{content}</div>
-      <ArticleInteractions articleId={id} />
-      <Comments 
-        articleId={id} 
-        comments={comments}
-        onNewComment={handleNewComment}
-        isLoading={isLoading}
-        error={error}
-      />
-    </div>
+    <>
+      <div className="border-b border-gray-200 dark:border-gray-800 p-4">
+        <h2 
+          onClick={handleTitleClick}
+          className="text-xl font-bold mb-2 cursor-pointer hover:text-blue-500 transition-colors duration-200 active:text-blue-600"
+        >
+          {title}
+        </h2>
+        <div className="mb-4">{content}</div>
+        <ArticleInteractions articleId={id} />
+        <Comments 
+          articleId={id} 
+          comments={comments}
+          onNewComment={handleNewComment}
+          isLoading={isLoading}
+          error={error}
+        />
+      </div>
+
+      {showReader && (
+        <Reader
+          title={title}
+          content={fullContent || content}
+          onClose={() => setShowReader(false)}
+          isLoading={isLoading}
+        />
+      )}
+    </>
   );
 };

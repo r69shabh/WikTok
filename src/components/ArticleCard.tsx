@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Reader from './Reader';
 import { Heart, MessageCircle, Share2, ChevronDown, Bookmark } from 'lucide-react';
 import CommentSection from './CommentSection';
 import { Comment } from '../types';
@@ -50,6 +51,68 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
     setIsBookmarked(!isBookmarked);
   };
 
+  const [showReader, setShowReader] = useState(false);
+  const [fullContent, setFullContent] = useState('');
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
+
+  // Add new handler for title click
+  const handleTitleClick = async () => {
+    setIsLoadingContent(true);
+    try {
+      const searchResponse = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&format=json&origin=*`
+      );
+      const searchData = await searchResponse.json();
+      const pages = searchData.query.pages;
+      const wikiPageId = Object.keys(pages)[0];
+    
+      const response = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=parse&pageid=${wikiPageId}&format=json&origin=*&prop=text`
+      );
+      const data = await response.json();
+      const articleContent = data.parse.text['*'];
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = articleContent;
+      
+      // Remove references section and other unwanted elements
+      const elementsToRemove = tempDiv.querySelectorAll(
+        '.mw-editsection, .navbox, .reference, .error, .mbox-small, ' +
+        '.portal, .sistersitebox, .noprint, .mw-empty-elt, ' +
+        '.mw-references-wrap, .navigation-not-searchable, ' +
+        '#References, .references, .reflist, ' +
+        'h2:has(span#References), ' +
+        'h2:has(span#Notes), ' +
+        'h2:has(span#Citations), ' +
+        'h2:has(span#Sources), ' +
+        'h2:has(span#Further_reading), ' +
+        'h2:has(span#External_links)'
+      );
+      elementsToRemove.forEach(el => {
+        // Also remove the next sibling if it's a reference list
+        const nextSibling = el.nextElementSibling;
+        if (nextSibling && 
+            (nextSibling.classList.contains('reflist') || 
+             nextSibling.classList.contains('references'))) {
+          nextSibling.remove();
+        }
+        el.remove();
+      });
+    
+      setFullContent(tempDiv.innerHTML);
+      setShowReader(true);
+    } catch (error) {
+      console.error('Failed to fetch article:', error);
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full text-sm z-50';
+      notification.textContent = 'Failed to load article';
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 2000);
+    } finally {
+      setIsLoadingContent(false);
+    }
+  };
+
   return (
     <div className="relative min-h-[calc(100vh-4rem)] border-b border-gray-800 dark:bg-black light:bg-white pb-24 md:flex md:flex-row-reverse md:pb-0">
       <div className="absolute inset-0 md:relative md:w-2/3 md:h-screen">
@@ -74,7 +137,15 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
       <div className="absolute bottom-16 left-0 right-0 p-4 md:relative md:bottom-0 md:w-1/3 md:flex md:flex-col md:justify-center md:p-8 md:bg-black/90 dark:md:bg-black/90 light:md:bg-white/90">
         <div className="flex justify-between items-end md:flex-col md:items-start md:h-full">
           <div className="flex-1 mr-4 md:mr-0 md:mb-8">
-            <h2 className="text-xl font-bold mb-2 text-white md:text-3xl">{title}</h2>
+            <h2 
+              onClick={handleTitleClick}
+              className="text-xl font-bold mb-2 text-white md:text-3xl cursor-pointer 
+                hover:text-blue-400 transition-all duration-200 ease-in-out active:scale-98 
+                flex items-center gap-2"
+            >
+              {title}
+              <span className="text-blue-400">↗</span>
+            </h2>
             <p className="text-sm text-white line-clamp-3 md:text-base md:line-clamp-none md:mb-6">{extract}</p>
             <a 
               href={`https://en.wikipedia.org/?curid=${pageId}`}
@@ -159,6 +230,22 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
         </div>
       </div>
 
+      {/* Update Reader transition */}
+      <div 
+        className={`fixed inset-0 z-50 transition-all duration-300 ${
+          showReader 
+            ? 'opacity-100 transform translate-y-0' 
+            : 'opacity-0 transform translate-y-4 pointer-events-none'
+        }`}
+      >
+        <Reader
+          title={title}
+          content={fullContent}
+          onClose={() => setShowReader(false)}
+          isLoading={isLoadingContent}
+        />
+      </div>
+      
       {showComments && (
         <div className="fixed inset-0 dark:bg-black light:bg-white z-50 overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b dark:border-gray-800 light:border-gray-200">

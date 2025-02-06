@@ -11,6 +11,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ArticlePage from './pages/ArticlePage';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { ReaderSettingsProvider } from './contexts/ReaderSettingsContext';
 
 // Add import at the top
 import Notifications from './pages/Notifications';
@@ -62,19 +63,21 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <ThemeProvider>
-          <LanguageProvider>
-            <NotificationProvider>
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </NotificationProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <ReaderSettingsProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeProvider>
+            <LanguageProvider>
+              <NotificationProvider>
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </NotificationProvider>
+            </LanguageProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </ReaderSettingsProvider>
   );
 }
 
