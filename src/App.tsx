@@ -22,8 +22,9 @@ function AppContent() {
 
   const handleLogoClick = () => {
     if (location.pathname === '/') {
-      // Clear saved scroll position and refresh the page
+      // Clear both scroll position and articles
       sessionStorage.removeItem('homeScrollPosition');
+      sessionStorage.removeItem('homeArticles');
       window.location.reload();
     }
   };

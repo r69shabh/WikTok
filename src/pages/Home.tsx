@@ -57,7 +57,7 @@ const HomeContent = () => {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      // Fetch random article titles
+      // Always fetch new articles
       const randomResponse = await fetch(
         `https://${language}.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=5&format=json&origin=*`
       );
@@ -102,7 +102,8 @@ const HomeContent = () => {
       });
 
       const articlesWithContent = await Promise.all(articlePromises);
-      setArticles(prev => [...prev, ...articlesWithContent]);
+      // For initial load or refresh, replace articles. For infinite scroll, append
+      setArticles(prev => prev.length === 0 ? articlesWithContent : [...prev, ...articlesWithContent]);
     } catch (error) {
       console.error('Error fetching articles:', error);
     } finally {
