@@ -25,6 +25,13 @@ export interface Article {
   created_at: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
 export interface Notification {
   id: string;
   user_id: string;
