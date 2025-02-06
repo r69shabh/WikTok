@@ -1,12 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '../lib/supabase'; // Import from centralized supabase client
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -14,27 +9,23 @@ const AuthCallback: React.FC = () => {
   const { setUser } = useAuth();
 
   useEffect(() => {
-    const session = searchParams.get('session');
-    const error = searchParams.get('error');
+    const handleAuth = async () => {
+      try {
+        const session = searchParams.get('session');
+        const error = searchParams.get('error');
 
-    if (session) {
-      // Set the session in Supabase
-      supabase.auth.setSession({
-        access_token: session,
-        refresh_token: ''
-      });
+        if (session) {
+          await supabase.auth.setSession({
+            access_token: session,
+            refresh_token: ''
+          });
 
-      // Get user data from Supabase
-      supabase
-        .from('users')
-        .select('*')
-        .single()
-        .then(({ data: userData, error: userError }) => {
-          if (userError) {
-            console.error('Failed to fetch user data:', userError);
-            navigate('/?error=user_fetch_failed');
-            return;
-          }
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .single();
+
+          if (userError) throw userError;
 
           const user = {
             id: userData.id,
@@ -45,11 +36,16 @@ const AuthCallback: React.FC = () => {
           localStorage.setItem('wiktok_user', JSON.stringify(user));
           setUser(user);
           navigate('/');
-        });
-    } else if (error) {
-      console.error('Authentication failed:', error);
-      navigate('/?error=auth_failed');
-    }
+        } else if (error) {
+          throw new Error(error);
+        }
+      } catch (error) {
+        console.error('Authentication error:', error);
+        navigate('/?error=auth_failed');
+      }
+    };
+
+    handleAuth();
   }, [searchParams, navigate, setUser]);
 
   return (
