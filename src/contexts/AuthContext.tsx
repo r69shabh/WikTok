@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async () => {
     try {
       // Wikipedia OAuth configuration
-      const clientId = '5c685503cfeb9b5c57b8f87189566781';
+      const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
       const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback');
       const responseType = 'code';
       const scope = 'basic';
