@@ -16,7 +16,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
-      {showLogo && <img src={logo} alt="WikiTok Logo" className="fixed top-4 left-4 z-50 h-6 w-auto" />}
+      {showLogo && <img src={logo} alt="WikTok Logo" className="fixed top-4 left-4 z-50 h-6 w-auto" />}
       <div className="max-w-md mx-auto pb-16">
         <Routes>
           <Route path="/" element={<Home />} />
