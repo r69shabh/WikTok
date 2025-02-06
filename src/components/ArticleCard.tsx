@@ -51,8 +51,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] border-b border-gray-800 dark:bg-black light:bg-white pb-16">
-      <div className="absolute inset-0">
+    <div className="relative min-h-[calc(100vh-4rem)] border-b border-gray-800 dark:bg-black light:bg-white pb-24 md:flex md:flex-row-reverse md:pb-0">
+      <div className="absolute inset-0 md:relative md:w-2/3 md:h-screen">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -63,25 +63,25 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
           <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black dark:from-gray-900 dark:to-black light:from-gray-100 light:to-white" />
         )}
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black dark:to-black light:to-white" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black dark:to-black light:to-white md:bg-gradient-to-l" />
       </div>
 
-      <div className="absolute bottom-16 left-0 right-0 p-4">
-        <div className="flex justify-between items-end">
-          <div className="flex-1 mr-4">
-            <h2 className="text-xl font-bold mb-2 text-white">{title}</h2>
-            <p className="text-sm text-white line-clamp-3">{extract}</p>
+      <div className="absolute bottom-16 left-0 right-0 p-4 md:relative md:bottom-0 md:w-1/3 md:flex md:flex-col md:justify-center md:p-8 md:bg-black/90 dark:md:bg-black/90 light:md:bg-white/90">
+        <div className="flex justify-between items-end md:flex-col md:items-start md:h-full">
+          <div className="flex-1 mr-4 md:mr-0 md:mb-8">
+            <h2 className="text-xl font-bold mb-2 text-white md:text-3xl">{title}</h2>
+            <p className="text-sm text-white line-clamp-3 md:text-base md:line-clamp-none md:mb-6">{extract}</p>
             <a 
               href={`https://en.wikipedia.org/?curid=${pageId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#0645AD] dark:text-[#0645AD] hover:text-[#0645AD]/80 mt-4 inline-block text-base px-4 py-2 bg-gray-100/80 rounded-full"
+              className="text-[#0645AD] dark:text-[#0645AD] hover:text-[#0645AD]/80 mt-4 inline-block text-base px-4 py-2 bg-gray-100/80 rounded-full md:mt-0"
             >
               Read more on Wikipedia
             </a>
           </div>
 
-          <div className="flex flex-col gap-4 items-center">
+          <div className="flex flex-col gap-4 items-center md:flex-row md:gap-8">
             <button 
               className="flex flex-col items-center"
               onClick={() => handleInteraction(() => setIsLiked(!isLiked))}
