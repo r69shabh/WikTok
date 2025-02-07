@@ -12,43 +12,37 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleAuth = async () => {
       try {
-        const session = searchParams.get('session');
-        const errorParam = searchParams.get('error');
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
+        const storedState = localStorage.getItem('oauth_state');
 
-        if (errorParam) {
-          throw new Error(errorParam);
+        if (!code) {
+          throw new Error('No authorization code received');
         }
 
-        if (!session) {
-          throw new Error('No session token provided');
+        if (state !== storedState) {
+          throw new Error('State mismatch. Possible CSRF attack');
         }
 
-        // First verify the session is valid
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        // Exchange code for token
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/wikipedia/callback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code, state }),
+        });
 
-        if (!sessionData.session) {
-          // Set the session if it's not already set
-          const { error: setSessionError } = await supabase.auth.setSession({
-            access_token: session,
-            refresh_token: ''
-          });
-          if (setSessionError) throw setSessionError;
+        if (!response.ok) {
+          throw new Error('Failed to exchange code for token');
         }
 
-        // Get user data
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('id, username')
-          .single();
-
-        if (userError) throw userError;
-        if (!userData) throw new Error('User data not found');
-
+        const data = await response.json();
+        
         const user = {
-          id: userData.id,
-          username: userData.username,
-          token: session
+          id: data.id,
+          username: data.username,
+          token: data.access_token
         };
 
         localStorage.setItem('wiktok_user', JSON.stringify(user));

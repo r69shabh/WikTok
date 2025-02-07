@@ -34,7 +34,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
       const baseRedirectUri = 'https://wik-tok.vercel.app/auth/callback';
       
-      // Construct OAuth parameters
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
@@ -43,13 +42,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         state: Math.random().toString(36).substring(7)
       });
 
-      // Store state for security
       localStorage.setItem('oauth_state', params.get('state') || '');
       
-      // Construct the final URL
-      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?${params.toString()}`;
-      
-      window.location.href = authUrl;
+      window.location.href = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?${params.toString()}`;
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
