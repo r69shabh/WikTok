@@ -34,15 +34,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Wikipedia OAuth configuration
       const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
       const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback');
-      const responseType = 'code';
-      const scope = 'basic';
+      const responseType = encodeURIComponent('code');
+      const scope = encodeURIComponent('basic');
       
       // Store state in localStorage to prevent CSRF attacks
       const state = Math.random().toString(36).substring(7);
       localStorage.setItem('oauth_state', state);
       
       // Construct the authorization URL with all required parameters
-      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&state=${state}`;
+      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
       
       // Redirect to Wikipedia's authorization page
       window.location.href = authUrl;
