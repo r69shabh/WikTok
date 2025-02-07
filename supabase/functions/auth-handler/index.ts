@@ -39,7 +39,7 @@ serve(async (req) => {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: Deno.env.get('VITE_REDIRECT_URL') || 'https://wik-tok.vercel.app/auth/callback'
+        redirect_uri: 'http://localhost:5173/auth/callback'
       }).toString()
     })
 

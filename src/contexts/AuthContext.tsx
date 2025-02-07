@@ -32,7 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async () => {
     try {
       const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
-      const baseRedirectUri = 'https://wik-tok.vercel.app/auth/callback';
+      // Update this to use localhost during development
+      const baseRedirectUri = 'http://localhost:5173/auth/callback';
       
       const params = new URLSearchParams({
         response_type: 'code',
