@@ -39,7 +39,7 @@ function AppContent() {
           onClick={handleLogoClick}
         />
       )}
-      <div className="max-w-md mx-auto pb-16">
+      <div className="w-full max-w-[420px] mx-auto pb-16">
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
