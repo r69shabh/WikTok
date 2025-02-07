@@ -24,24 +24,26 @@ const AuthCallback: React.FC = () => {
           throw new Error('State mismatch. Possible CSRF attack');
         }
 
-        // Exchange code for token
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/wikipedia/callback`, {
+        // Update this URL to your Supabase Function URL
+        const response = await fetch(`${import.meta.env.SUPABASE_URL}/functions/v1/auth-handler`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`
           },
           body: JSON.stringify({ code, state }),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to exchange code for token');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to authenticate');
         }
 
         const data = await response.json();
         
         const user = {
-          id: data.id,
-          username: data.username,
+          id: data.user.id,
+          username: data.user.username,
           token: data.access_token
         };
 
