@@ -31,24 +31,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async () => {
     try {
-      // Wikipedia OAuth configuration
       const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
-      const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback');
-      const responseType = encodeURIComponent('code');
-      const scope = encodeURIComponent('basic');
+      const baseRedirectUri = 'https://wik-tok.vercel.app/auth/callback';
       
-      // Store state in localStorage to prevent CSRF attacks
-      const state = Math.random().toString(36).substring(7);
-      localStorage.setItem('oauth_state', state);
+      // Construct OAuth parameters
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: baseRedirectUri,
+        scope: 'basic',
+        state: Math.random().toString(36).substring(7)
+      });
+
+      // Store state for security
+      localStorage.setItem('oauth_state', params.get('state') || '');
       
-      // Construct the authorization URL with all required parameters
-      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+      // Construct the final URL
+      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?${params.toString()}`;
       
-      // Redirect to Wikipedia's authorization page
       window.location.href = authUrl;
     } catch (error) {
       console.error('Login failed:', error);
-      throw error; // Propagate error to be handled by UI
+      throw error;
     }
   };
 
