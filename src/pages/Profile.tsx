@@ -3,6 +3,7 @@ import { Settings, Grid, Bookmark, Heart, Sun, Moon, Globe2, Info, LogOut } from
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useReaderSettings } from '../contexts/ReaderSettingsContext';
 
 const Profile = () => {
   const { isAuthenticated, showAuthModal, setShowAuthModal } = useAuth();
@@ -25,9 +26,13 @@ const Profile = () => {
 
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
+  const { updateReaderSettings } = useReaderSettings();
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    // Sync reader theme with app theme
+    updateReaderSettings({ theme: newTheme });
   };
 
   const handleLanguageChange = (lang: string) => {
@@ -43,6 +48,7 @@ const Profile = () => {
     // Implement Wikipedia OAuth login
     window.location.href = 'https://meta.wikimedia.org/w/rest.php/oauth2/authorize';
   };
+  
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">

@@ -4,20 +4,12 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
-    host: true
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  build: {
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-        },
-      },
-    },
-  },
-});
+    port: 5173, // Changed from 3000 to avoid conflict with backend
+    strictPort: true, // Ensure Vite uses exactly this port
+    hmr: {
+      host: 'localhost',
+      port: 5173, // Match the server port
+      clientPort: 5173 // Explicitly set client port
+    }
+  }
+})
