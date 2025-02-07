@@ -10,12 +10,15 @@ interface ReaderProps {
 }
 
 import { useReaderSettings } from '../contexts/ReaderSettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) => {
   const { settings } = useReaderSettings();
+  const { theme } = useTheme();
 
   const getThemeColors = () => {
-    switch (settings.theme) {
+    // Use app's theme instead of reader settings theme
+    switch (theme) {
       case 'dark':
         return {
           bg: 'bg-black',
@@ -40,19 +43,19 @@ const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) =
     }
   };
 
-  const theme = getThemeColors();
+  const themeColors = getThemeColors();
 
   return (
-    <div className={`fixed inset-0 ${theme.bg} z-50 overflow-y-auto animate-fadeIn`}>
+    <div className={`fixed inset-0 ${themeColors.bg} z-50 overflow-y-auto animate-fadeIn`}>
       {/* Header */}
-      <div className={`sticky top-0 ${theme.bg} py-3 px-4 flex items-center justify-between ${theme.border} border-b z-10 backdrop-blur-lg bg-opacity-80`}>
-        <h1 className={`text-lg font-medium ${theme.text} truncate max-w-[70%]`}>{title}</h1>
+      <div className={`sticky top-0 ${themeColors.bg} py-3 px-4 flex items-center justify-between ${themeColors.border} border-b z-10 backdrop-blur-lg bg-opacity-80`}>
+        <h1 className={`text-lg font-medium ${themeColors.text} truncate max-w-[70%]`}>{title}</h1>
         <div className="flex items-center gap-3">
           <a
             href={`https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`px-3 py-1.5 text-sm ${theme.secondary} hover:text-blue-400 transition-colors flex items-center gap-1`}
+            className={`px-3 py-1.5 text-sm ${themeColors.secondary} hover:text-blue-400 transition-colors flex items-center gap-1`}
           >
             Wikipedia ↗
           </a>
@@ -60,7 +63,7 @@ const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) =
             onClick={onClose}
             className={`p-1.5 rounded-full hover:bg-gray-100/10 transition-colors`}
           >
-            <X size={20} className={theme.text} />
+            <X size={20} className={themeColors.text} />
           </button>
         </div>
       </div>
@@ -80,7 +83,8 @@ const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) =
                 font-family: ${settings.fontFamily || 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif'};
                 font-size: ${settings.fontSize || '18px'};
                 line-height: ${settings.lineHeight || '1.8'};
-                color: ${theme.text === 'text-white' ? '#fff' : '#1a1a1a'};
+                color: ${theme === 'dark' ? '#e5e7eb' : '#1a1a1a'};
+                background-color: ${theme === 'dark' ? '#111827' : 'transparent'};
               }
               .content p {
                 margin-bottom: 1.8em;
@@ -93,22 +97,27 @@ const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) =
                 margin-top: 2em;
                 margin-bottom: 0.8em;
                 letter-spacing: -0.02em;
-                color: ${theme.text === 'text-white' ? '#fff' : '#000'};
+                color: ${theme === 'dark' ? '#f3f4f6' : '#000'};
               }
               .content img {
-                max-width: 100%;
+                max-width: min(100%, 800px);
+                width: 100%;
                 height: auto;
+                aspect-ratio: auto;
                 margin: 2em auto;
                 border-radius: 12px;
                 display: block;
+                object-fit: contain;
+                filter: ${theme === 'dark' ? 'brightness(0.85) contrast(1.1)' : 'none'};
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
               }
               .content a {
-                color: #3b82f6;
+                color: ${theme === 'dark' ? '#93c5fd' : '#3b82f6'};
                 text-decoration: none;
                 transition: all 0.2s;
               }
               .content a:hover {
-                color: #60a5fa;
+                color: ${theme === 'dark' ? '#bfdbfe' : '#60a5fa'};
               }
               .content ul, .content ol {
                 padding-left: 1.5em;
@@ -120,10 +129,11 @@ const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) =
               .content blockquote {
                 margin: 2em 0;
                 padding: 1em 1.5em;
-                border-left: 4px solid ${theme.text === 'text-white' ? '#2d3748' : '#e5e7eb'};
-                background: ${theme.text === 'text-white' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
+                border-left: 4px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
+                background: ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
                 border-radius: 0 8px 8px 0;
                 font-style: italic;
+                color: ${theme === 'dark' ? '#d1d5db' : 'inherit'};
               }
               .content table {
                 width: 100%;
@@ -132,10 +142,11 @@ const Reader: React.FC<ReaderProps> = ({ title, content, onClose, isLoading }) =
               }
               .content th, .content td {
                 padding: 0.75em;
-                border: 1px solid ${theme.text === 'text-white' ? '#2d3748' : '#e5e7eb'};
+                border: 1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'};
               }
               .content th {
-                background: ${theme.text === 'text-white' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
+                background: ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+                color: ${theme === 'dark' ? '#f3f4f6' : 'inherit'};
               }
             `}</style>
             <div 

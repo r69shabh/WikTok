@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, TrendingUp, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import Reader from '../components/Reader';
 
 interface TrendingArticle {
   title: string;
@@ -42,6 +43,8 @@ const Discover = () => {
   const [trendingArticles, setTrendingArticles] = useState<TrendingArticle[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showReader, setShowReader] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<{ title: string; content: string } | null>(null);
   const searchTimeout = useRef<NodeJS.Timeout>();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -347,7 +350,21 @@ const Discover = () => {
                   <div
                     key={index}
                     className="bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-lg p-4"
-                    onClick={() => window.open(`https://${language}.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank')}
+                    onClick={async () => {
+                      setIsLoading(true);
+                      try {
+                        const response = await fetch(
+                          `https://${language}.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(article.title)}`
+                        );
+                        const content = await response.text();
+                        setSelectedArticle({ title: article.title, content });
+                        setShowReader(true);
+                      } catch (error) {
+                        console.error('Failed to fetch article:', error);
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -368,7 +385,21 @@ const Discover = () => {
                 <div
                   key={result.pageid}
                   className="bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
-                  onClick={() => window.open(`https://${language}.wikipedia.org/?curid=${result.pageid}`, '_blank')}
+                  onClick={async () => {
+                    setIsLoading(true);
+                    try {
+                      const response = await fetch(
+                        `https://${language}.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(result.title)}`
+                      );
+                      const content = await response.text();
+                      setSelectedArticle({ title: result.title, content });
+                      setShowReader(true);
+                    } catch (error) {
+                      console.error('Failed to fetch article:', error);
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
                 >
                   {result.thumbnail && (
                     <img
@@ -399,7 +430,21 @@ const Discover = () => {
             <div
               key={result.pageid}
               className="bg-gray-100 dark:bg-gray-900 light:bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
-              onClick={() => window.open(`https://${language}.wikipedia.org/?curid=${result.pageid}`, '_blank')}
+              onClick={async () => {
+                setIsLoading(true);
+                try {
+                  const response = await fetch(
+                    `https://${language}.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(result.title)}`
+                  );
+                  const content = await response.text();
+                  setSelectedArticle({ title: result.title, content });
+                  setShowReader(true);
+                } catch (error) {
+                  console.error('Failed to fetch article:', error);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
             >
               {result.thumbnail && (
                 <img
@@ -420,6 +465,18 @@ const Discover = () => {
             </div>
           )}
         </div>
+      )}
+
+      {showReader && selectedArticle && (
+        <Reader
+          title={selectedArticle.title}
+          content={selectedArticle.content}
+          onClose={() => {
+            setShowReader(false);
+            setSelectedArticle(null);
+          }}
+          isLoading={isLoading}
+        />
       )}
     </div>
   );
