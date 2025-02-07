@@ -24,12 +24,12 @@ const AuthCallback: React.FC = () => {
           throw new Error('State mismatch. Possible CSRF attack');
         }
 
-        // Update this URL to your Supabase Function URL
-        const response = await fetch(`${import.meta.env.SUPABASE_URL}/functions/v1/auth-handler`, {
+        // Update to use the correct Supabase Functions URL
+        const response = await fetch('https://huwebsrgeoxdrvhciqjp.supabase.co/functions/v1/auth-handler', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
           },
           body: JSON.stringify({ code, state }),
         });
