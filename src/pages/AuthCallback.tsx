@@ -14,6 +14,9 @@ const AuthCallback: React.FC = () => {
       try {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
+        console.log('Received code:', code);
+        console.log('Received state:', state);
+        
         const storedState = localStorage.getItem('oauth_state');
 
         if (!code) {
@@ -25,15 +28,18 @@ const AuthCallback: React.FC = () => {
         }
 
         // Update to use the correct Supabase Functions URL
+        console.log('Making request to Supabase function...');
         const response = await fetch('https://huwebsrgeoxdrvhciqjp.supabase.co/functions/v1/auth-handler', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
           },
           body: JSON.stringify({ code, state }),
         });
 
+        console.log('Response status:', response.status);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to authenticate');
