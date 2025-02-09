@@ -14,9 +14,7 @@ const AuthCallback: React.FC = () => {
       try {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
-        console.log('Received code:', code);
-        console.log('Received state:', state);
-        
+        const provider = localStorage.getItem('oauth_provider');
         const storedState = localStorage.getItem('oauth_state');
 
         if (!code) {
@@ -27,25 +25,16 @@ const AuthCallback: React.FC = () => {
           throw new Error('State mismatch. Possible CSRF attack');
         }
 
-        // Update to use the correct Supabase Functions URL
-        console.log('Making request to Supabase function...');
+        // Call Supabase Edge Function for authentication
         const response = await fetch('https://huwebsrgeoxdrvhciqjp.supabase.co/functions/v1/auth-handler', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-            'X-Client-Info': 'wiktok-web'  // Add client info header
           },
-          body: JSON.stringify({ 
-            code, 
-            state,
-            client_id: import.meta.env.VITE_WIKIPEDIA_CLIENT_ID,
-            client_secret: import.meta.env.VITE_WIKIPEDIA_CLIENT_SECRET
-          }),
-          });
+          body: JSON.stringify({ code, provider }),
+        });
 
-        console.log('Response status:', response.status);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to authenticate');
@@ -53,11 +42,19 @@ const AuthCallback: React.FC = () => {
 
         const data = await response.json();
         
+        // Set up Supabase session
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
+
+        if (sessionError) throw sessionError;
+
         const user = {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
-          provider: localStorage.getItem('oauth_provider') as 'google' | 'apple',
+          provider: provider as 'google' | 'apple',
           token: data.access_token
         };
 
@@ -72,27 +69,13 @@ const AuthCallback: React.FC = () => {
     };
 
     handleAuth();
-  }, [searchParams, navigate, setUser]);
+  }, [navigate, searchParams, setUser]);
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="text-red-500 mb-4">Authentication failed: {error}</div>
-        <button 
-          onClick={() => navigate('/', { replace: true })}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Return to Home
-        </button>
-      </div>
-    );
+    return <div>Error: {error}</div>;
   }
 
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-    </div>
-  );
+  return <div>Authenticating...</div>;
 };
 
 export default AuthCallback;

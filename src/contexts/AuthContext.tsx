@@ -16,16 +16,16 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   loginWithApple: () => Promise<void>;
   logout: () => void;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<WikiUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    // Check for existing session
     const savedUser = localStorage.getItem('wiktok_user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -35,17 +35,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     try {
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      const baseRedirectUri = 'http://localhost:5173/auth/callback/google';
+      const redirectUri = `${window.location.origin}/auth/callback`;
       
+      const state = crypto.randomUUID();
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
-        redirect_uri: baseRedirectUri,
+        redirect_uri: redirectUri,
         scope: 'email profile',
-        state: Math.random().toString(36).substring(7)
+        state
       });
 
-      localStorage.setItem('oauth_state', params.get('state') || '');
+      localStorage.setItem('oauth_state', state);
       localStorage.setItem('oauth_provider', 'google');
       
       window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -56,32 +57,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithApple = async () => {
-    try {
-      const clientId = import.meta.env.VITE_APPLE_CLIENT_ID;
-      const baseRedirectUri = 'http://localhost:5173/auth/callback/apple';
-      
-      const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: clientId,
-        redirect_uri: baseRedirectUri,
-        scope: 'name email',
-        state: Math.random().toString(36).substring(7),
-        response_mode: 'form_post'
-      });
-
-      localStorage.setItem('oauth_state', params.get('state') || '');
-      localStorage.setItem('oauth_provider', 'apple');
-      
-      window.location.href = `https://appleid.apple.com/auth/authorize?${params.toString()}`;
-    } catch (error) {
-      console.error('Apple login failed:', error);
-      throw error;
-    }
+    // Implement Apple login
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem('wiktok_user');
+    localStorage.removeItem('oauth_state');
+    localStorage.removeItem('oauth_provider');
+    setUser(null);
   };
 
   return (
@@ -93,7 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setShowAuthModal,
         loginWithGoogle,
         loginWithApple,
-        logout
+        logout,
+        setUser
       }}
     >
       {children}
