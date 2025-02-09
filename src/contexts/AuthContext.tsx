@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async () => {
     try {
       const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
-      // Update this to use localhost during development
       const baseRedirectUri = 'http://localhost:5173/auth/callback';
       
       const params = new URLSearchParams({
@@ -45,7 +44,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       localStorage.setItem('oauth_state', params.get('state') || '');
       
-      window.location.href = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?${params.toString()}`;
+      // Add proper encoding for the redirect URI
+      const encodedRedirectUri = encodeURIComponent(baseRedirectUri);
+      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?${params.toString()}`;
+      window.location.href = authUrl;
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

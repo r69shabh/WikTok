@@ -34,10 +34,16 @@ const AuthCallback: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'X-Client-Info': 'wiktok-web'  // Add client info header
           },
-          body: JSON.stringify({ code, state }),
-        });
+          body: JSON.stringify({ 
+            code, 
+            state,
+            client_id: import.meta.env.VITE_WIKIPEDIA_CLIENT_ID,
+            client_secret: import.meta.env.VITE_WIKIPEDIA_CLIENT_SECRET
+          }),
+          });
 
         console.log('Response status:', response.status);
         if (!response.ok) {
