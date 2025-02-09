@@ -1,17 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface WikiUser {
+interface User {
   id: string;
-  username: string;
+  name: string;
+  email: string;
+  provider: 'google' | 'apple';
   token?: string;
 }
 
 interface AuthContextType {
-  user: WikiUser | null;
+  user: User | null;
   isAuthenticated: boolean;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
-  login: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithApple: () => Promise<void>;
   logout: () => void;
 }
 
@@ -29,27 +32,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = async () => {
+  const loginWithGoogle = async () => {
     try {
-      const clientId = import.meta.env.VITE_WIKIPEDIA_CLIENT_ID;
-      const baseRedirectUri = 'http://localhost:5173/auth/callback';
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const baseRedirectUri = 'http://localhost:5173/auth/callback/google';
       
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
         redirect_uri: baseRedirectUri,
-        scope: 'basic',
+        scope: 'email profile',
         state: Math.random().toString(36).substring(7)
       });
 
       localStorage.setItem('oauth_state', params.get('state') || '');
+      localStorage.setItem('oauth_provider', 'google');
       
-      // Add proper encoding for the redirect URI
-      const encodedRedirectUri = encodeURIComponent(baseRedirectUri);
-      const authUrl = `https://meta.wikimedia.org/w/rest.php/oauth2/authorize?${params.toString()}`;
-      window.location.href = authUrl;
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Google login failed:', error);
+      throw error;
+    }
+  };
+
+  const loginWithApple = async () => {
+    try {
+      const clientId = import.meta.env.VITE_APPLE_CLIENT_ID;
+      const baseRedirectUri = 'http://localhost:5173/auth/callback/apple';
+      
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: baseRedirectUri,
+        scope: 'name email',
+        state: Math.random().toString(36).substring(7),
+        response_mode: 'form_post'
+      });
+
+      localStorage.setItem('oauth_state', params.get('state') || '');
+      localStorage.setItem('oauth_provider', 'apple');
+      
+      window.location.href = `https://appleid.apple.com/auth/authorize?${params.toString()}`;
+    } catch (error) {
+      console.error('Apple login failed:', error);
       throw error;
     }
   };
@@ -66,7 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         showAuthModal,
         setShowAuthModal,
-        login,
+        loginWithGoogle,
+        loginWithApple,
         logout
       }}
     >

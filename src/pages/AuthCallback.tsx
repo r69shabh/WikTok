@@ -55,7 +55,9 @@ const AuthCallback: React.FC = () => {
         
         const user = {
           id: data.user.id,
-          username: data.user.username,
+          name: data.user.name,
+          email: data.user.email,
+          provider: localStorage.getItem('oauth_provider') as 'google' | 'apple',
           token: data.access_token
         };
 
